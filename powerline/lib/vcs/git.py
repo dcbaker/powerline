@@ -15,6 +15,19 @@ from powerline.lib.shell import which
 _ref_pat = re.compile(br'ref:\s*refs/heads/(.+)')
 
 
+def series_name(directory):
+	shead = os.path.join(directory, 'refs/SHEAD')
+	try:
+		with open(shead, 'rb') as f:
+			raw = f.read()
+	except IOError:
+		return None
+	m = _ref_pat.match(raw)
+	if m is not None:
+		return m.group(1).decode(get_preferred_file_contents_encoding(), 'replace')
+	return None
+
+
 def branch_name_from_config_file(directory, config_file):
 	try:
 		with open(config_file, 'rb') as f:
@@ -24,6 +37,9 @@ def branch_name_from_config_file(directory, config_file):
 	m = _ref_pat.match(raw)
 	if m is not None:
 		return m.group(1).decode(get_preferred_file_contents_encoding(), 'replace')
+	series = series_name(directory)
+	if series is not None:
+		return series
 	return raw[:7]
 
 
